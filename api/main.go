@@ -23,3 +23,25 @@ func main(){
 	setupRoutes(app)
 	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
 }
+
+func ShortenURL(c *fiber.Ctx) error {
+	body: = new(request)
+
+	if err : =c.BodyParser(&body);err!=nil{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"cannot parse JSON"})
+	}
+	//implement rate limiting
+
+	//check if the input if an actual Url
+	ig !govalidator.IsURL(body.URL){
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error":"Invalid URL"})
+	}
+
+	//check for domain header
+	if !helpers.RemoveDomainError(body.URL){
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{})
+	}
+
+	//enforce https ,ssl
+	body.URL=helpers.EnforceHTTP(body.URL)
+}
